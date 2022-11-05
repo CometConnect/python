@@ -1,14 +1,18 @@
-seed = int(input("Enter seed: "))
-steps = [seed]
+import time
 
-while seed != 1:
-    if seed % 2 == 0:
-        seed /= 2
-    else:
-        seed = 3 * seed + 1
 
-    steps.append(int(seed))
+def forma(tim):
+    minutes = tim // 60
+    seconds = tim % 60
 
-print("Number of steps: ", len(steps))
-print("Highest number: ", max(steps))
-print("Steps: ", steps)
+    return str(minutes)+":"+str(seconds)
+
+
+sec = int(input("Enter the time in number of seconds: "))
+time_remaining = sec
+while time_remaining > 0:
+    print(forma(time_remaining), end="\r")
+    time.sleep(1)
+    time_remaining -= 1
+
+print("Times up!")
