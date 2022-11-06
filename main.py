@@ -1,8 +1,9 @@
 import os
 import shutil
 
-f1 = input("Enter folder 1:")
-f2 = input("Enter folder 2:")
+# change these according to your needs
+f1 = "Downloads"  # target
+f2 = "Data"  # destination
 
 folder1_path = os.path.join(os.getcwd(), f1)
 folder2_path = os.path.join(os.getcwd(), f2)
@@ -27,9 +28,16 @@ def check_or_make(path):
 
 
 file_list = os.listdir(folder1_path)
+extension_to_dir = {
+    ".accdb": "Access Databases",
+    ".xlsx": "Excel Worksheets",
+    ".pptx": "Powerpoint Presentations",
+    ".pub": "Publisher Documents",
+    ".docx": "Word Documents"
+}
 for file in file_list:
     [_, extension] = os.path.splitext(os.path.join(folder1_path, file))
-    folder_path = check_or_make(extension)
+    folder_path = check_or_make(extension_to_dir[extension])
     shutil.move(
         os.path.join(folder1_path, file),
         folder_path
