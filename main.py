@@ -1,33 +1,24 @@
-import random
+import os
+import shutil
 
-map = ["e", "df", "def", "acgi", "acegi", "acdfgi"]
+f1 = input("Enter folder 1:")
+f2 = input("Enter folder 2:")
 
+folder1_path = os.path.join(os.getcwd(), f1)
+folder2_path = os.path.join(os.getcwd(), f2)
 
-def convert(char):
-    if char == "a": return 1
-    if char == "b": return 2
-    if char == "c": return 3
-    if char == "d": return 7
-    if char == "e": return 8
-    if char == "f": return 9
-    if char == "g": return 13
-    if char == "h": return 14
-    if char == "i": return 15
+if not os.path.exists(folder1_path):
+    print("folder1 doesn't exist")
+    exit(1)
+if not os.path.exists(folder2_path):
+    print("folder2 doesn't exit")
+    exit(1)
 
+file_list = os.listdir(folder1_path)
+for file in file_list:
+    shutil.move(
+        os.path.join(os.getcwd(), f1, file),
+        folder2_path
+    )
 
-def forma(roll):
-    mapped = map[roll-1]
-    output = list("[---]\n[   ]\n[   ]\n[   ]\n[---]")
-    for place in mapped:
-        output[convert(place)+6] = "0"
-
-    return "".join(output)
-
-
-running = True
-while running:
-    ran = random.randint(1, 6)
-    print(forma(ran))
-    res = input("press y to roll again and n to exit:")
-    if res == "n":
-        running = False
+print("Files moved")
