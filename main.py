@@ -1,36 +1,17 @@
-import os
-import time
+import numpy
+import cv2
 
-from watchdog.observers import Observer
-from watchdog.events import FileSystemEventHandler
-
-
-class Handler(FileSystemEventHandler):
-    def on_created(self, event):
-        print(f"\n{event.src_path} has been created")
-
-    def on_deleted(self, event):
-        print(f"\n{event.src_path} has been deleted")
-
-    def on_moved(self, event):
-        print(f"\n{event.src_path} has been moved")
-
-    def on_modified(self, event):
-        print(f"\n{event.src_path} has been modified")
+data = numpy.zeros((600, 600))
 
 
-event_handler = Handler()
-observer = Observer()
-observer.schedule(
-    event_handler,
-    os.getcwd()
-)
-observer.start()
+def sqr(i):
+    return i * i
 
-try:
-    while True:
-        time.sleep(2)
-        print(".", end="")
-except KeyboardInterrupt:
-    print("!")
-    observer.stop()
+
+for i in range(len(data) - 1):
+    for j in range(len(data[i]) - 1):
+        if sqr(i - 300) + sqr(j - 300) <= sqr(200):
+            data[i][j] = 255
+
+cv2.imshow("Circle", data)
+cv2.waitKey(0)
