@@ -1,17 +1,25 @@
-import numpy
 import cv2
 
-data = numpy.zeros((600, 600))
+img = cv2.imread("solar-system.jpg")
 
 
-def sqr(i):
-    return i * i
+def makeText(text: str, position: tuple):
+    cv2.putText(img, text, position, cv2.FONT_HERSHEY_COMPLEX, 0.5, (255, 255, 255))
 
 
-for i in range(len(data) - 1):
-    for j in range(len(data[i]) - 1):
-        if sqr(i - 300) + sqr(j - 300) <= sqr(200):
-            data[i][j] = 255
+mappings = [
+    ["Sun", (20, 300)],
+    ["Mercury", (100, 200)],
+    ["Venus", (190, 170)],
+    ["Earth", (290, 260)],
+    ["Mars", (380, 260)],
+    ["Jupiter", (500, 70)],
+    ["Saturn", (800, 150)],
+    ["Uranus", (950, 150)],
+    ["Neptune", (1100, 150)]
+]
 
-cv2.imshow("Circle", data)
-cv2.waitKey(0)
+for mapping in mappings:
+    makeText(mapping[0], mapping[1])
+
+cv2.imwrite("solar-system-with-names.jpg", img)
