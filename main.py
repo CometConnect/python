@@ -1,21 +1,17 @@
 import cv2
 
-vid = cv2.VideoCapture(0)
+image = "FaceDetection/4f.jpg"
 
-while True:
-    ret, frame = vid.read()
+data = cv2.imread(image)
+formatted = cv2.cvtColor(data, cv2.COLOR_RGB2GRAY)
 
-    formatted = cv2.cvtColor(frame, cv2.COLOR_RGB2GRAY)
-    classifier = cv2.CascadeClassifier("haarcascade_frontalface_default.xml")
 
-    faces = classifier.detectMultiScale(formatted)
-    for [x, y, width, height] in faces:
-        cv2.rectangle(frame, (x, y), (x+width, y+height), (255, 0, 0), 2)
+classifier = cv2.CascadeClassifier("haarcascade_frontalface_default.xml")
 
-    cv2.imshow("Web cam", frame)
+faces = classifier.detectMultiScale(formatted)
 
-    if cv2.waitKey(25) == 32:
-        break
-
-vid.release()
-cv2.destoryAllWindows()
+output = []
+for [x, y, width, height] in faces:
+    faceImage = data[y:y+height, x:x+width]
+    name = str(x + y + width + height) + ".png"
+    cv2.imwrite(name, faceImage)
