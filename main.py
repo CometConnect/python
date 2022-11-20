@@ -1,25 +1,19 @@
 import cv2
 
-img = cv2.imread("solar-system.jpg")
+fps = 50
+wait = int(1000 / fps)
 
+vid = cv2.VideoCapture(0)
+writer = cv2.VideoWriter("video.mp4", cv2.VideoWriter_fourcc(*'mp4v'), fps, (1280, 720), True)
 
-def makeText(text: str, position: tuple):
-    cv2.putText(img, text, position, cv2.FONT_HERSHEY_COMPLEX, 0.5, (255, 255, 255))
+i = 110
+while vid.open(f"Images/{i}.jpg"):
+    data = vid.read()[1]
+    cv2.imshow("Output", data)
+    writer.write(data)
+    cv2.waitKey(wait)
+    i += 1
 
-
-mappings = [
-    ["Sun", (20, 300)],
-    ["Mercury", (100, 200)],
-    ["Venus", (190, 170)],
-    ["Earth", (290, 260)],
-    ["Mars", (380, 260)],
-    ["Jupiter", (500, 70)],
-    ["Saturn", (800, 150)],
-    ["Uranus", (950, 150)],
-    ["Neptune", (1100, 150)]
-]
-
-for mapping in mappings:
-    makeText(mapping[0], mapping[1])
-
-cv2.imwrite("solar-system-with-names.jpg", img)
+vid.release()
+writer.release()
+cv2.destroyAllWindows()
