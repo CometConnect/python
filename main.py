@@ -1,19 +1,21 @@
 import cv2
 
-fps = 50
-wait = int(1000 / fps)
-
 vid = cv2.VideoCapture(0)
-writer = cv2.VideoWriter("video.mp4", cv2.VideoWriter_fourcc(*'mp4v'), fps, (1280, 720), True)
 
-i = 110
-while vid.open(f"Images/{i}.jpg"):
-    data = vid.read()[1]
-    cv2.imshow("Output", data)
-    writer.write(data)
-    cv2.waitKey(wait)
-    i += 1
+while True:
+    ret, frame = vid.read()
+
+    formatted = cv2.cvtColor(frame, cv2.COLOR_RGB2GRAY)
+    classifier = cv2.CascadeClassifier("haarcascade_frontalface_default.xml")
+
+    faces = classifier.detectMultiScale(formatted)
+    for [x, y, width, height] in faces:
+        cv2.rectangle(frame, (x, y), (x+width, y+height), (255, 0, 0), 2)
+
+    cv2.imshow("Web cam", frame)
+
+    if cv2.waitKey(25) == 32:
+        break
 
 vid.release()
-writer.release()
-cv2.destroyAllWindows()
+cv2.destoryAllWindows()
