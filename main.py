@@ -7,6 +7,7 @@ tracker = cv2.TrackerCSRT_create()
 
 _, frame = vid.read()
 tracker.init(frame, cv2.selectROI("Image", frame))
+scored = False
 
 
 def drawBox(img, bbox):
@@ -47,11 +48,15 @@ while True:
     drawBox(frame, data)
 
     center = find_center(data[0], data[1], data[2], data[3])
+    dft = round(distance_from_target(center[0], center[1]))
+    if dft < 80:
+        scored = True
     trajectory.append(center)
 
     draw_trajectory(frame)
-    cv2.putText(frame, f"Distance from target: {round(distance_from_target(center[0], center[1]))}", (100, 100),
+    cv2.putText(frame, f"Distance from target: {dft}", (100, 100),
                 cv2.FONT_HERSHEY_COMPLEX, 0.5, (255, 255, 255))
+    cv2.putText(frame, f"Scored: {scored}", (100, 50), cv2.FONT_HERSHEY_COMPLEX, 0.5, (255, 255, 255))
 
     cv2.imshow("Image", frame)
     cv2.waitKey(1)
