@@ -1,62 +1,53 @@
-import math
-
 import cv2
+import mediapipe as mp
 
-vid = cv2.VideoCapture('bb3.mp4')
-tracker = cv2.TrackerCSRT_create()
+utils = mp.solutions.drawing_utils
+styles = mp.solutions.drawing_styles
+hands = mp.solutions.hands
 
-_, frame = vid.read()
-tracker.init(frame, cv2.selectROI("Image", frame))
-scored = False
+tops = [4, 8, 12, 16, 20]
+bottoms = [2, 6, 10, 14, 18]
 
+vid = cv2.VideoCapture(0)
 
-def drawBox(img, bbox):
-    x, y, w, h = int(bbox[0]), int(bbox[1]), int(bbox[2]), int(bbox[3])
-    cv2.rectangle(img, (x, y), ((x + w), (y + h)), (255, 0, 255), 3, 1)
+with hands.Hands(
+        model_complexity=0,
+        min_tracking_confidence=0.5,
+        min_detection_confidence=0.5
+) as hands:
+    while vid.isOpened():
+        _, frame = vid.read()
+        fingers = 0
 
+        frame.flags.writeable = False
+        frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+        results = hands.process(frame)
+        raw = results.multi_hand_landmarks
+        if not raw:
+            frame = cv2.cvtColor(frame, cv2.COLOR_RGB2BGR)
+            frame = cv2.flip(frame, 1)
+            cv2.imshow("Image", frame)
+            cv2.waitKey(5)
+            continue
 
-def sqaure(x):
-    return x * x
+        hlms = raw[0].landmark
+        for i in range(5):
+            top = tops[i]
+            bottom = bottoms[i]
 
+            toplm = hlms[top]
+            bottomlm = hlms[bottom]
 
-def find_center(x, y, width, height):
-    return x + width / 2, y + height / 2
+            if toplm.y < bottomlm.y: # the y - axis of flipped
+                fingers += 1
 
+        for hlm in raw:
+            utils.draw_landmarks(frame, hlm, None, styles.get_default_hand_landmarks_style(),
+                                 styles.get_default_hand_connections_style())
 
-target = find_center(478, 254, 85, 80)
+        frame = cv2.cvtColor(frame, cv2.COLOR_RGB2BGR)
 
-
-def distance_from_target(x, y):
-    # √(x₁-x₂)² + (y₁-y₂)²
-    return math.sqrt(sqaure(x - target[0]) + sqaure(y - target[1]))
-
-
-trajectory = [
-
-]
-
-
-def draw_trajectory(img):
-    for pt in trajectory:
-        cv2.circle(img, (int(pt[0]), int(pt[1])), 1, (255, 0, 0), 5)
-
-
-while True:
-    _, frame = vid.read()
-
-    _, data = tracker.update(frame)
-    drawBox(frame, data)
-
-    center = find_center(data[0], data[1], data[2], data[3])
-    dft = round(distance_from_target(center[0], center[1]))
-    if dft < 80:
-        scored = True
-    trajectory.append(center)
-
-    draw_trajectory(frame)
-    cv2.putText(frame, f"Distance from target: {dft}", (100, 100),
-                cv2.FONT_HERSHEY_COMPLEX, 0.5, (255, 255, 255))
-    cv2.putText(frame, f"Scored: {scored}", (100, 50), cv2.FONT_HERSHEY_COMPLEX, 0.5, (255, 255, 255))
-
-    cv2.imshow("Image", frame)
-    cv2.waitKey(1)
+        frame = cv2.flip(frame, 1)
+        cv2.putText(frame, f"Fingers: {fingers-1}", (100, 100), cv2.FONT_HERSHEY_COMPLEX, 0.5, (0, 0, 0))
+        cv2.imshow("Image", frame)
+        cv2.waitKey(5)
