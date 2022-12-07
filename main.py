@@ -1,67 +1,61 @@
 import cv2
-import mediapipe as mp
-from pynput.keyboard import Controller, Key
+import math
 
-utils = mp.solutions.drawing_utils
-styles = mp.solutions.drawing_styles
-hands = mp.solutions.hands
+p1 = 530
+p2 = 300
 
-tops = [4, 8, 12, 16, 20]
-bottoms = [2, 6, 10, 14, 18]
+xs = []
+ys = []
+windowName = "FootVolleyBall"
 
-vid = cv2.VideoCapture(0)
-controller = Controller()
-prev = 0
+video = cv2.VideoCapture("footvolleyball.mp4")
+tracker = cv2.TrackerCSRT_create()
 
-with hands.Hands(
-        model_complexity=0,
-        min_tracking_confidence=0.5,
-        min_detection_confidence=0.5
-) as hands:
-    while vid.isOpened():
-        _, frame = vid.read()
-        fingers = 0
-        direction = "null"
+_, img = video.read()
+tracker.init(img, cv2.selectROI(windowName, img, False))
 
-        frame.flags.writeable = False
-        frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-        results = hands.process(frame)
-        raw = results.multi_hand_landmarks
-        if not raw:
-            frame = cv2.cvtColor(frame, cv2.COLOR_RGB2BGR)
-            frame = cv2.flip(frame, 1)
-            cv2.imshow("Image", frame)
-            cv2.waitKey(5)
-            continue
 
-        hlms = raw[0].landmark
-        if hlms[0].x < hlms[8].x:
-            direction = "right"
-        else:
-            direction = "left"
-        for i in range(5):
-            top = tops[i]
-            bottom = bottoms[i]
+def goal_track(img, bbox):
+    x, y, w, h = int(bbox[0]), int(bbox[1]), int(bbox[2]), int(bbox[3])
+    c1 = x + int(w / 2)
+    c2 = y + int(h / 2)
+    cv2.circle(img, (c1, c2), 2, (0, 0, 255), 5)
 
-            toplm = hlms[top]
-            bottomlm = hlms[bottom]
+    cv2.circle(img, (int(p1), int(p2)), 2, (0, 255, 0), 3)
+    dist = math.sqrt(((c1 - p1) ** 2) + (c2 - p2) ** 2)
 
-            if not i == 0:
-                if toplm.y < bottomlm.y:
-                    fingers += 1
-        for hlm in raw:
-            utils.draw_landmarks(frame, hlm, None, styles.get_default_hand_landmarks_style(),
-                                 styles.get_default_hand_connections_style())
+    if dist <= 20:
+        cv2.putText(img, "Goal", (300, 90), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 255, 0), 2)
 
-        frame = cv2.cvtColor(frame, cv2.COLOR_RGB2BGR)
-        frame = cv2.flip(frame, 1)
+    xs.append(c1)
+    ys.append(c2)
 
-        if fingers == 0 and not prev == 0:
-            controller.press(Key.space)
-        elif fingers == 1 and direction == "left":
-            controller.press(Key.right)  # THE FRAME IS FLIPPED WHILE CHECKING
-        elif fingers == 1 and direction == "right":
-            controller.press(Key.left)
+    for i in range(len(xs) - 1):
+        cv2.circle(img, (xs[i], ys[i]), 2, (0, 0, 255), 5)
 
-        cv2.waitKey(5)
-        prev = fingers
+
+def drawBox(img, bbox):
+    x, y, w, h = int(bbox[0]), int(bbox[1]), int(bbox[2]), int(bbox[3])
+    cv2.rectangle(img, (x, y), ((x + w), (y + h)), (255, 0, 255), 3, 1)
+    cv2.putText(img, "Tracking", (75, 90), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 255, 0), 2)
+
+
+def updateROI(img):
+    tracker.init(img, cv2.selectROI(windowName, img, False))
+
+
+while True:
+    try:
+        _, img = video.read()
+        __, bbox = tracker.update(img)
+        if bbox == (0, 0, 0, 0):
+            updateROI(img)
+        drawBox(img, bbox)
+        goal_track(img, bbox)
+
+        cv2.imshow(windowName, img)
+        if cv2.waitKey(1) == 32:
+            break
+    except cv2.error:
+        break
+video.release()
