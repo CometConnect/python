@@ -1,41 +1,61 @@
-import cv2
-import numpy
-from keras.models import Sequential
-from enum import Enum
+from keras.preprocessing.image import ImageDataGenerator
+from keras.models import save_model, Sequential
+from keras.layers import Conv2D, MaxPool2D, Flatten, Dropout, Dense
 
-vid = cv2.VideoCapture(0)
-model = Sequential()
-
-
-class Gesture(Enum):
-    Scissors = 0
-    Paper = 1
-    Rock = 2
-
-
-def get_gesture(image) -> tuple[Gesture, float]:
-    resized = numpy.resize(image, (len(image[0]), len(image)))
-    normalized = resized/numpy.linalg.norm(resized, 1)
-
-    predictions = model.predict(normalized)
-    print(predictions[0][0], " Scissors")
-    print(predictions[0][1], " Paper")
-    print(predictions[0][2], " Rock")
-
-    return Gesture(0), float(predictions[0][0])
+# Image data generator
+training_generator = ImageDataGenerator(
+    rescale=1/255,
+    rotation_range=40,
+    width_shift_range=0.3,
+    height_shift_range=0.3,
+    zoom_range=0.3,
+    horizontal_flip=True,
+    vertical_flip=True,
+    fill_mode='nearest')
+validation_generator = ImageDataGenerator(rescale=1/255)
 
 
-while True:
-    status, frame = vid.read()
-    if status:
-        frame = cv2.flip(frame, 1)
-        gesture, score = get_gesture(frame)
+# Image Directory
+training_directory = "training_dataset"
+testing_directory = "testing_dataset"
+validation_directory = "validation_dataset"
 
-        cv2.putText(frame, f"{gesture.name}: {score}%", (50, 50), cv2.FONT_HERSHEY_COMPLEX, 0.5, (255, 0, 0))
-        cv2.imshow('Cam', frame)
-        if cv2.waitKey(1) == 32:
-            break
-    else:
-        break
+# Generate Preprocessed Augmented Data
+training_augmented = training_generator.flow_from_directory(
+    training_directory,
+    target_size=(180, 180)
+)
+validation_augmented = validation_generator.flow_from_directory(
+    validation_directory,
+    target_size=(180, 180)
+)
 
-vid.release()
+sequence = [
+    Conv2D(64, (3, 3), activation='relu', input_shape=(180, 180, 3)),
+    MaxPool2D(2, 2)
+]
+sequence += [
+    Conv2D(64, (3, 3), activation='relu'),
+    MaxPool2D(2, 2),
+] * 3
+sequence += [
+    Flatten(),
+    Dropout(0.5),
+    Dense(512, activation='relu'),
+    Dense(2, activation='sigmoid')
+]
+model = Sequential(sequence)
+
+model.compile(
+    optimizer='adam',
+    loss='binary_crossentropy',
+    metrics=['accuracy']
+)
+
+fit_history = model.fit(
+    training_augmented,
+    epochs=5,
+    verbose=True
+)
+
+model.save('model.h5')
