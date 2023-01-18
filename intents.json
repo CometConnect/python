@@ -1,66 +1,67 @@
-{
-  "intents": [
-    {
-      "tag": "greeting",
-     "patterns": ["Hi there!", "How are you?", "Is anyone there?",
-                  "Hey!","Hola!", "Hello!"],
-     "responses": ["Hello, thanks for asking!", "Good to see you.",
-                   "Hi there, how can I help?"]
+{"intents": [
+    {"tag": "greeting",
+     "patterns": ["Hi there", "How are you", "Is anyone there?","Hey","Hola", "Hello"],
+     "responses": ["Hello, thanks for asking", "Good to see you again", "Hi there, how can I help?"]
+ 
     },
-    {
-      "tag": "goodbye",
-     "patterns": ["Bye.", "See you later!", "Goodbye!",
-                  "Nice chatting to you, bye.", "Till next time!!"],
-     "responses": ["See you!", "Have a nice day.", "Bye! Come back again soon."]
+    {"tag": "goodbye",
+     "patterns": ["Bye", "See you later", "Goodbye", "Nice chatting to you, bye", "Till next time"],
+     "responses": ["See you!", "Have a nice day", "Bye! Come back again soon."] 
+ 
     },
-    {
-      "tag": "thanks",
-     "patterns": ["Thanks!", "Thank you", "That's helpful",
-                  "Awesome, thanks", "Thanks for helping me"],
-     "responses": ["Happy to help!", "Any time!", "My pleasure."]
+    {"tag": "thanks",
+     "patterns": ["Thanks", "Thank you", "That's helpful", "Awesome, thanks", "Thanks for helping me"],
+     "responses": ["Happy to help!", "No problem, any time!", "My pleasure"]
+ 
     },
-    {
-      "tag": "noanswer",
+    {"tag": "noanswer",
      "patterns": [""],
-     "responses": ["Sorry, can't understand you", "Please give me more info",
-                   "Not sure I understand"]
+     "responses": ["Sorry, can't understand you", "Please give me more info", "Not sure I understand"]
+ 
     },
-    {
-      "tag": "options",
-     "patterns": ["I am bored today!", "What you can do?",
-                  "I don't know what to do", "What help you provide?",
-                  "How you can be helpful?", "What support is offered"],
-     "responses": ["I can guide you through an activity to spend the day. What's your hobby?",
-                   "we can plan out for a daily activity. what would you like doing?"]
+    {"tag": "options",
+     "patterns": ["How you could help me?", "What help you provide?", "How you can be helpful?"],
+     "responses": ["I can show you some latest electronic gadegets" , 
+                    "I can show you some really cool Smartphones" , 
+                    "Why don't i show you some awesome Headphones" , 
+                    "Wanna check out some Video Games" , "How about some cool digital cameras?"]
+ 
     },
-    {
-      "tag": "art",
-        "patterns": ["I like art", "I like craft", "art and craft", "drawing", "sketching?", "painting"],
-        "responses": ["you can draw a geometric art and color it!!","you can sketch a scenery today.",
-                      "Try Dotted Mandala art today!"]
+    {"tag": "products",
+        "patterns": ["Can you show me all your products?", "What all products do you have?" , 
+                    "What do you sell?"],
+        "responses": ["Yes i have a great variety of Smartphones , Digital Cameras , Headphones and Video Games"]
+    
     },
-    {
-      "tag": "music",
-        "patterns": ["I like music", "I like songs", "songs and music", "pop"],
-        "responses": ["you can listen to songs on FM radio",
-                      "You can record a video to post on social media website"]
+    {"tag": "smartphone",
+        "patterns": ["Which is the most popular phone?", "Which is the most trending smartphone?" , 
+                    "Which is the best phone?"],
+        "responses": ["iPhone 12 is the most popular phone" , "Samsung Galaxy Z is the most trending phone" , 
+                    "OnePlus 9 is the latest phone"]
+    
     },
-
-    {
-      "tag": "cooking",
-            "patterns": ["I like cooking", "I like baking", "eating pizza", "cooking","food"],
-            "responses": ["you can try baking a cake today!","You can cook a pizza today"]
+    {"tag": "camera",
+        "patterns": ["Which is the most popular digital camera?", "Which is the most trending camera?" , 
+                    "Which is the best camera?"],
+        "responses": ["Canon EOS is the most popular camera. Do check it out!" , 
+                    "Panasonic LUMIX is the one you are looking for!"]
+    
     },
-
-    {
-      "tag": "fitness",
-        "patterns": ["I like to work out", "I like aerobics", "exercise"],
-        "responses": ["you can try zumba dance today !","You can try pilates today"]
+    {"tag": "headphone",
+        "patterns": ["Which is the most popular Headphone?", "Which is the most trending bluetooth headphone?" , 
+                    "Which is the best headphone?"],
+        "responses": ["I love BOAT headphones, you should try them" , 
+                    "Skull Candy has a really cool collection, do check it out!" , 
+                    "Sennheiser is the hottest brand right now, do check it out!"]
+    
     },
-
-    {
-      "tag": "travel",
-        "patterns": ["I like to travel", "I like exploring different places", "travelling"],
-        "responses": ["you can visit a zoo today!","You can visit an amusement park today"]
+    {"tag": "videogame",
+        "patterns": ["Which the most trending video game?", "Please tell me the latest Video game!" , 
+                    "Do you have any cool Video game?"],
+        "responses": ["I have CALL OF DUTY as one of my favourites of all time" , 
+                    "I you like Adventure, you should try out GTA-VICE CITY"]
+    
     }
-]}
+]
+}
+
