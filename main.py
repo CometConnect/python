@@ -1,154 +1,54 @@
-import nltk
-from nltk.stem import PorterStemmer
-stemmer = PorterStemmer()
-
-nltk.download('punkt')
-nltk.download('wordnet')
-
-import json
-import pickle
-import numpy as np
-
-words = []  # list of unique roots words in the data
-classes = []  # list of unique tags in the data
-pattern_word_tags_list = []  # list of the pair of (['words', 'of', 'the', 'sentence'], 'tags')
-
-# words to be ignored while creating Dataset
-ignore_words = ['?', '!', ',', '.', "'s", "'m"]
-
-# open the JSON file, load data from it.
-train_data_file = open('intents.json')
-data = json.load(train_data_file)
-train_data_file.close()
+from selenium import webdriver
+from bs4 import BeautifulSoup
+from pandas import DataFrame
+from dataclasses import dataclass
 
 
-# creating function to stem words
-def get_stem_words(words, ignore_words):
-    stem_words = []
-    for word in words:
-        # write stemming algorithm:
-        '''
-        Check if word is not a part of stop word:
-        1) lowercase it 
-        2) stem it
-        3) append it to stem_words list
-        4) return the list
-        '''
-        # Add code here #        
-        if word not in ignore_words:
-            stem_words.append(stemmer.stem(word.lower()))
-
-    return stem_words
+@dataclass
+class Data:
+    apparent_magnitude: str
+    name: str
+    bayer_designation: str
+    distance: str
+    spectral_class: str
+    mass: str
+    radius: str
+    luminosity: str
 
 
-'''
-List of sorted stem words for our dataset : 
+start_url = "https://en.wikipedia.org/wiki/List_of_brightest_stars_and_other_record_stars"
 
-['all', 'ani', 'anyon', 'are', 'awesom', 'be', 'best', 'bluetooth', 'bye', 'camera', 'can', 'chat', 
-'cool', 'could', 'digit', 'do', 'for', 'game', 'goodby', 'have', 'headphon', 'hello', 'help', 'hey', 
-'hi', 'hola', 'how', 'is', 'later', 'latest', 'me', 'most', 'next', 'nice', 'phone', 'pleas', 'popular', 
-'product', 'provid', 'see', 'sell', 'show', 'smartphon', 'tell', 'thank', 'that', 'the', 'there', 
-'till', 'time', 'to', 'trend', 'video', 'what', 'which', 'you', 'your']
+browser = webdriver.Chrome("D:/setup/chromedriver_win32/chromedriver.exe")
+browser.get(start_url)
 
-'''
+data = []
 
+soup = BeautifulSoup(browser.page_source, "html.parser")
+raw_data = soup.find('tbody')
+for i, v in enumerate(raw_data.children):
+    if v == '\n':
+        continue
+    res = list(v.children)
+    while res.count('\n'):
+        res.remove('\n')
 
-# creating a function to make corpus
-def create_bot_corpus(words, classes, pattern_word_tags_list, ignore_words):
-    for intent in data['intents']:
+    try:
+        apparent_magnitude = res[0].get_text().rstrip()
+        name = res[1].find('a').get_text().rstrip()
+        bayer_designation = res[2].get_text().rstrip()
+        distance = res[3].get_text().rstrip()
+        spectral_class = res[4].get_text().rstrip()
+        mass = res[5].get_text().rstrip()
+        radius = res[6].get_text().rstrip()
+        luminosity = res[7].get_text().rstrip()
 
-        # Add all patterns and tags to a list
-        for pattern in intent['patterns']:
-            # tokenize the pattern          
-            pattern_word = nltk.word_tokenize(pattern)
-            words.extend(pattern_word)
-            pattern_word_tags_list.append((pattern_word, intent['tag']))
-
-            # add the tokenized words to the words list        
-
-            # add the 'tokenized word list' along with the 'tag' to pattern_word_tags_list
-
-        # Add all tags to the classes list
-        if intent['tag'] not in classes:
-            classes.append(intent['tag'])
-
-    stem_words = get_stem_words(words, ignore_words)
-
-    # Remove duplicate words from stem_words
-    # sort the stem_words list and classes list
-    stem_words = sorted(list(set(stem_words)))
-    classes = sorted(list(set(classes)))
-
-    # print stem_words
-    print('stem_words list : ', stem_words)
-
-    return stem_words, classes, pattern_word_tags_list
+        data.append(Data(apparent_magnitude, name, bayer_designation, distance, spectral_class, mass, radius, luminosity))
+    except:
+        pass
 
 
-# Training Dataset: 
-# Input Text----> as Bag of Words 
-# Tags-----------> as Label
+# define pandas dataframe
+data_frame = DataFrame(data, columns=list(filter(lambda x: not x.startswith('__'), dir(data[0]))))
 
-def bag_of_words_encoding(stem_words, pattern_word_tags_list):
-    bag = []
-    for word_tags in pattern_word_tags_list:
-        # example: word_tags = (['hi', 'there'], 'greetings']
-
-        pattern_words = word_tags[0]  # ['Hi' , 'There]
-
-        # stemming pattern words before creating Bag of words
-        stemmed_pattern_word = get_stem_words(pattern_words, ignore_words)
-
-        # Input data encoding 
-        '''
-        Write BOW algo :
-        1) take a word from stem_words list
-        2) check if that word is in stemmed_pattern_word
-        3) append 1 in BOW, otherwise append 0
-        '''
-        bag_of_words = [1 if word in stemmed_pattern_word else 0 for word in stem_words]
-
-        bag.append(bag_of_words)
-
-    return np.array(bag)
-
-
-def class_label_encoding(classes, pattern_word_tags_list):
-    labels = []
-
-    for word_tags in pattern_word_tags_list:
-        # Start with list of 0s
-        labels_encoding = list([0] * len(classes))
-
-        # example: word_tags = (['hi', 'there'], 'greetings']
-
-        tag = word_tags[1]  # 'greetings'
-
-        tag_index = classes.index(tag)
-
-        # Labels Encoding
-        labels_encoding[tag_index] = 1
-
-        labels.append(labels_encoding)
-
-    return np.array(labels)
-
-
-def preprocess_train_data():
-    stem_words, tag_classes, word_tags_list = create_bot_corpus(words, classes, pattern_word_tags_list, ignore_words)
-
-    # Convert Stem words and Classes to Python pickel file format
-    pickle.dump(stem_words, open('words.pkl','wb'))
-    pickle.dump(tag_classes, open('classes.pkl','wb'))
-
-    train_x = bag_of_words_encoding(stem_words, word_tags_list)
-    train_y = class_label_encoding(tag_classes, word_tags_list)
-
-    return train_x, train_y
-
-
-bow_data, label_data = preprocess_train_data()
-
-# after completing the code, remove comment from print statements
-# print("first BOW encoding: " , bow_data[0])
-# print("first Label encoding: " , label_data[0])
+# convert to csv
+data_frame.to_csv('data.csv')
