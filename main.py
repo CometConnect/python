@@ -1,51 +1,69 @@
 from selenium import webdriver
 from bs4 import BeautifulSoup
 from pandas import DataFrame
+from time import sleep
 from dataclasses import dataclass
 
 
 @dataclass
 class Data:
-    apparent_magnitude: str
     name: str
-    bayer_designation: str
-    distance: str
-    spectral_class: str
-    mass: str
-    radius: str
-    luminosity: str
+    hyperlink: str
+    light_years_from_earth: str
+    planet_mass: str
+    steller_magnitude: str
+    discovery_date: str
 
 
-start_url = "https://en.wikipedia.org/wiki/List_of_brightest_stars_and_other_record_stars"
+@dataclass
+class DataFinal:
+    name: str
+    hyperlink: str
+    light_years_from_earth: str
+    planet_mass: str
+    steller_magnitude: str
+    discovery_date: str
+
+    planet_type: str
+    planet_radius: str
+    orbital_radius: str
+    orbital_period: str
+    eccenticity: str
+
+
+start_url = "https://exoplanets.nasa.gov/discovery/exoplanet-catalog/"
 
 browser = webdriver.Chrome("D:/setup/chromedriver_win32/chromedriver.exe")
 browser.get(start_url)
 
-data = []
+pre_data = []
 
 soup = BeautifulSoup(browser.page_source, "html.parser")
-raw_data = soup.find('tbody')
-for i, v in enumerate(raw_data.children):
-    if v == '\n':
-        continue
-    res = list(v.children)
-    while res.count('\n'):
-        res.remove('\n')
+raw_data = soup.find_all('ul', class_="exoplanet")
+for row in raw_data:
+    name = row.find('li', class_="display_name").find('a').get_text()
+    hyperlink = row.find('li', class_="display_name").find('a')["href"]
+    light_years_from_earth = row.find('li', class_="st_dist").get_text()
+    planet_mass = row.find('li', class_="mass_display").get_text()
+    steller_magnitude = row.find('li', class_="st_optmag").get_text()
+    discovery_date = row.find('li', class_="discovery_date").get_text()
 
-    try:
-        apparent_magnitude = res[0].get_text().rstrip()
-        name = res[1].find('a').get_text().rstrip()
-        bayer_designation = res[2].get_text().rstrip()
-        distance = res[3].get_text().rstrip()
-        spectral_class = res[4].get_text().rstrip()
-        mass = res[5].get_text().rstrip()
-        radius = res[6].get_text().rstrip()
-        luminosity = res[7].get_text().rstrip()
+    pre_data.append(Data(name, hyperlink, light_years_from_earth, planet_mass, steller_magnitude, discovery_date))
 
-        data.append(Data(apparent_magnitude, name, bayer_designation, distance, spectral_class, mass, radius, luminosity))
-    except:
-        pass
-
+data = []
+# get more data
+for cell in pre_data:
+    browser.get("https://exoplanets.nasa.gov" + cell.hyperlink)
+    soup = BeautifulSoup(browser.page_source, "html.parser")
+    res = soup.find_all('div', class_="value")
+    res.pop()  # remove radial velocity
+    data.append(
+        DataFinal(
+            cell.name, cell.hyperlink, cell.light_years_from_earth, cell.planet_mass, cell.steller_magnitude, cell.discovery_date,
+            res[0].get_text(), res[3].get_text(), res[4].get_text(), res[5].get_text(), res[6].get_text()
+        )
+    )
+    break
 
 # define pandas dataframe
 data_frame = DataFrame(data, columns=list(filter(lambda x: not x.startswith('__'), dir(data[0]))))
