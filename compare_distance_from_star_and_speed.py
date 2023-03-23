@@ -4,7 +4,7 @@ from string import digits
 columns = []
 data = {}
 
-with open('data.csv', 'r') as f:
+with open('old_csv/mass_fix.csv', 'r') as f:
   for i, row in enumerate(f.readlines()):
     if i == 0:
       columns = row.split(',')

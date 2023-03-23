@@ -1,6 +1,6 @@
 from pandas import read_csv
 
-df = read_csv('data.csv')
+df = read_csv('old_csv/mass_fix.csv')
 
 def isfloat(x):
   if x.isdigit():
