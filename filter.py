@@ -1,5 +1,5 @@
 import pandas as pd
-df = pd.read_csv("final.csv")
+df = pd.read_csv("csv/final.csv")
 print(df.shape)
 df = df.drop(columns=['temp_planet_date', 'temp_planet_mass', 'hyperlink', 'planet_radius', 'orbital_period', 'eccentricity'])
 df.rename({
@@ -85,4 +85,4 @@ df.rename({
 
 print(df.shape)
 #Save the data into main.csv
-df.to_csv("filtered.csv")
+df.to_csv("csv/filtered.csv")

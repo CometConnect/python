@@ -1,6 +1,6 @@
 from pandas import read_csv
 
-df = read_csv('old_csv/mass_fix.csv')
+df = read_csv('csv/filtered.csv')
 
 def isfloat(x):
   if x.isdigit():
@@ -29,4 +29,4 @@ for cell in df.iloc:
 
 df.drop(columns=['Unnamed: 0'], inplace=True)
 df['goldilock'] = goldilock
-df.to_csv("data.csv")
+df.to_csv("csv/goldilock.csv")
