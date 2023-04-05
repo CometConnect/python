@@ -18,6 +18,25 @@ def index():
     i += 1
   return to_send
 
+@app.route("/home")
+def get_home():
+  to_send = []
+  columns = data.columns[1:]
+  i = 0
+  while True:
+    try:
+      planet_data = {}
+      response = data.iloc[i].to_json(orient='records')[1:-1].split(",")[1:]
+      for j, item in enumerate(response):
+        if columns[j] == "name" or columns[j] == "planet_type":
+          planet_data.update({ columns[j]: item.replace("\"", "").replace("\"", "") })
+      planet_data.update({ "index": i })
+      to_send.append(planet_data)
+    except:
+      break
+    i += 1
+  return to_send
+
 
 @app.route("/get/<int:i>")
 def get_data(i):
